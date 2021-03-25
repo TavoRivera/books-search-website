@@ -1,6 +1,7 @@
 import os
+import string
 
-from flask import Flask, flash, session, render_template, redirect, request, session
+from flask import Flask, flash, session, render_template, redirect, request, url_for
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -41,7 +42,7 @@ db = scoped_session(sessionmaker(bind=engine))
 @login_required
 def index():
 
-    return render_template("index.html", name="Noe")
+    return render_template("index.html")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -108,7 +109,7 @@ def register():
         if not user:
             return render_template("register.html", alert="ingrese un nombre de usuario")
         elif not pass1:
-            return render_template("register.html", alert="ingrese una cotraseña")
+            return render_template("register.html", alert="ingrese una contraseña")
         elif pass1 != pass2:
             return render_template("register.html", alert="contraseñas no coinciden")
 
@@ -124,6 +125,30 @@ def register():
             return render_template("register.html", alert="Usuario ya existe")
     else:
         return render_template("register.html")
+
+
+@app.route("/search", methods=["GET", "POST"])
+@login_required
+def search():
+
+    # Get form information
+    if request.method == "POST":
+
+        search = str(request.form.get("search"))
+        search = string.capwords(search, sep=None)
+
+        print(search)
+
+        query = db.execute(
+            "SELECT * FROM books WHERE title LIKE :search OR isbn LIKE :search OR author LIKE :search", {
+                "search": '%' + search + '%'},
+        )
+        books = query.fetchall()
+        print(books)
+
+        if len(books) == 0:
+            return render_template("index.html", alert="libro no encotrado")
+        return render_template("index.html", books=books)
 
 
 def errorhandler(e):
