@@ -1,7 +1,9 @@
 import os
 import string
+import requests
+import json
 
-from flask import Flask, flash, session, render_template, redirect, request, url_for
+from flask import Flask, flash, session, render_template, redirect, request, url_for, jsonify
 from flask_session import Session
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
@@ -41,8 +43,8 @@ db = scoped_session(sessionmaker(bind=engine))
 @app.route("/")
 @login_required
 def index():
-
-    return render_template("index.html")
+    if session.get("logged_in"):
+        return render_template("index.html", name=session["user_name"])
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -54,7 +56,7 @@ def login():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
-
+        print(request.form.get("password"))
         # Ensure username was submitted
         if not request.form.get("username"):
             return render_template("login.html", alert="proporcione un nombre de usuario")
@@ -74,6 +76,8 @@ def login():
 
         # Remember which user has logged in
         session["user_id"] = result[0]
+        session["user_name"] = result[1]
+        session["logged_in"] = True
 
         # Redirect user to home page
         return render_template("index.html", name=result[1])
@@ -120,7 +124,7 @@ def register():
             db.execute("INSERT INTO users (username, hash) VALUES (:user ,:pass1);", {
                        "user": user, "pass1": generate_password_hash(pass1)})
             db.commit()
-            return render_template("login.html", success="Registrado de pana")
+            return render_template("login.html", success="Registrado")
         else:
             return render_template("register.html", alert="Usuario ya existe")
     else:
@@ -148,7 +152,77 @@ def search():
 
         if len(books) == 0:
             return render_template("index.html", alert="libro no encotrado")
-        return render_template("index.html", books=books)
+        return render_template("index.html", name=session["user_name"], books=books)
+
+
+@app.route("/book/<isbn>", methods=["GET", "POST"])
+@login_required
+def book(isbn):
+
+    user = session["user_id"]
+
+    book = db.execute("SELECT * FROM books WHERE isbn = :isbn",
+                      {"isbn": isbn})
+    book_id = book.fetchone()
+    book_id = book_id[0]
+    row = db.execute("SELECT isbn, title, author, year FROM books WHERE isbn = :isbn",
+                     {"isbn": isbn})
+    book_info = row.fetchall()
+    reviews = db.execute("SELECT * FROM rate WHERE id_user = :id_user AND isbn = :id_book",
+                         {"id_user": user,
+                          "id_book": book_id})
+    rate = reviews.fetchall()
+
+    if request.method == "POST":
+
+        rating = int(request.form.get("rating"))
+        comment = request.form.get("comment")
+
+        comprobe = db.execute("SELECT * FROM rate WHERE id_user = :id_user AND isbn = :id_book",
+                              {"id_user": user,
+                               "id_book": book_id})
+
+        if comprobe.rowcount == 1:
+            return render_template("book.html", book_info=book_info, rate=rate,  name=session["user_name"], alert="Ya subiste una opinión sobre este libro")
+
+        db.execute("INSERT INTO rate (isbn, id_user, rating, comment, time) VALUES (:isbn, :id_user, :rating, :comment, now())", {
+                   "isbn": book_id, "id_user": user, "rating": rating, "comment": comment})
+        db.commit()
+
+        return render_template("index.html", success="has añadido un comentario, busca el libro para verlo")
+
+    else:
+
+        response = requests.get(
+            "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn).json()
+
+        return render_template("book.html", rate=rate, book_info=book_info, name=session["user_name"],)
+
+
+@app.route("/api/<isbn>", methods=["GET"])
+def api(isbn):
+
+    lookForBook = db.execute(
+        "SELECT * FROM books WHERE isbn=:isbn", {"isbn": isbn}).fetchone()
+    if not lookForBook:
+        return jsonify({"error": "Invalid ISBN"}), 422
+    # query api
+    res = requests.get(
+        "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn).json()
+
+    # ratingsCount = res["books"][0]["ratingsCount"]
+    # ratings = res["books"][0]["averageRating"]
+
+    # Return results in JSON format
+    return jsonify({
+        "title": lookForBook.title,
+        "author": lookForBook.author,
+        "year": lookForBook.year,
+        "isbn": lookForBook.isbn,
+        # "review_count": ratingsCount,
+        # "average_score": ratings
+    })
+    # ya no pude extraer la info del api
 
 
 def errorhandler(e):

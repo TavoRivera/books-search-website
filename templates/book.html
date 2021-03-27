@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block title %}
+{{book_id[0]['title']}}
+{% endblock %}
+
+{% block content %}
+<div class="row container text-center mt-4">
+    <div class="col-sm-4">
+        <img src="http://covers.openlibrary.org/b/isbn/{{book_info[0]['isbn']}}-M.jpg" width="130px">
+    </div>
+    <div class="col-sm-4">
+        <h1>{{book_info[0]['title']}}</h1>
+        <h5>Author: {{book_info[0]['author']}}</h5>
+        <h5>Published: {{book_info[0]['year']}}</h5>
+        <h5>ISBN: {{book_info[0]['isbn']}}</h5>
+    </div>   
+</div>
+<div class="dropdown-divider mt-4"></div>
+    <h4 class="alert alert-warning">Comentarios</h4>
+<div>
+    <form method="POST" class="form-border">
+        <div class="form-row">
+            <div class="form-group col-sm">
+                <label for="rating">Califica este libro</label>
+                <select id="rating" name="rating" class="form-control" required>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+            <div class="form-group col-sm-6">
+                <div class="input-group">
+                    <div class="form-group">
+                        <p>Haga un comentario</p>
+                        <input autocomplete="off" autofocus class="form-control" name="comment" placeholder="I love this book!" type="text" />
+                    </div>
+                    <div class="form-group col-sm">
+                        <button class="btn btn-success" type="submit">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>     
+</div>
+<section class="container">
+    {% for r in rate %}
+    <div class="list-group">
+        <div class="d-flex w-100 justify-content-between row">
+            <h6 class="mb-1" style="color:#1777; font-size: 30px;">{{name}}</h6>
+            <small>A las {{r.time}}</small>
+        </div>
+        <p class="mb-1"><b>Comentario:</b> {{r.comment}}</p>
+        <small><b>Rated:</b> {{r.rating}}</small>
+    </div>
+    {% endfor %}
+</section>
+{% endblock %}

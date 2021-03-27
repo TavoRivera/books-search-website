@@ -1,0 +1,56 @@
+@import "../../base/variables";
+
+@media screen and (max-width: 490px) {
+	h6 {
+		font-size: 8px;
+	}
+}
+
+footer {
+	background: #22c1c3; /* fallback for old browsers */
+	background: -webkit-linear-gradient(
+		to right,
+		#fdbb2d,
+		#22c1c3
+	); /* Chrome 10-25, Safari 5.1-6 */
+	background: linear-gradient(
+		to right,
+		#fdbb2d,
+		#22c1c3
+	); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+.redes-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+
+	ul li {
+		display: inline-block;
+		margin: 5px;
+		width: 30px;
+		height: 30px;
+		text-align: center;
+
+		a {
+			display: block;
+			padding: 0 10px;
+			background: $color-xd;
+			color: white;
+			line-height: 30px;
+			border-radius: 10px;
+			font-size: 10px;
+			box-shadow: 0 2px 4px 0px rgba(0, 0, 0, 0.2);
+			transition: 0.2s;
+		}
+		//acá hago que el ícono específico señalado deje de desenfocarse
+		a:hover {
+			transform: translateY(-3px) scale(1.05);
+			box-shadow: 0 4px 4px 0px rgba(0, 0, 0, 0.4);
+			filter: none;
+		}
+	}
+	//acá hago que los íconos se desenfoquen con el hover
+	ul:hover a {
+		filter: blur(2px);
+	}
+}

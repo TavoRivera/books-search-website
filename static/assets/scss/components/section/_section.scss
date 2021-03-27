@@ -1,0 +1,27 @@
+.btn_color {
+	background: #ff4b1f; /* fallback for old browsers */
+	background: -webkit-linear-gradient(
+		to right,
+		#1fddff,
+		#ff4b1f
+	); /* Chrome 10-25, Safari 5.1-6 */
+	background: linear-gradient(
+		to right,
+		#1fddff,
+		#ff4b1f
+	); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}
+.btn_color:hover {
+	transition-delay: 2ms;
+	background: #c02425; /* fallback for old browsers */
+	background: -webkit-linear-gradient(
+		to right,
+		#f0cb35,
+		#c02425
+	); /* Chrome 10-25, Safari 5.1-6 */
+	background: linear-gradient(
+		to right,
+		#f0cb35,
+		#c02425
+	); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+}

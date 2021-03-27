@@ -6,42 +6,41 @@
 {% endblock %}
 
 {% block content %}
-
-<h1>Hola {{name}} ¿qué libro estás buscando?</h1>
-<form action="{{url_for('search')}}" method="post">
-    <div class="col-sm-6 col-md-6 col-lg-3">
-        <input class="form-control" name="search" placeholder="ISBN, title, or author">
-        <div class="text-center">
-            <button class="btn btn-dark" id="search-btn">SEARCH</button>
+<section class="container text-center">
+    <h1>Hola {{name}} ¿qué libro estás buscando?</h1>
+    <form action="{{url_for('search')}}" method="post">
+        <div class="">
+            <input class="form-control" name="search" placeholder="ISBN, Titulo o Autor">
+            <div class="">
+                <button class="btn btn_color mt-5" id="search-btn">SEARCH</button>
+            </div>
         </div>
+    </form>
+
+    <div class="table-responsive mt-5">
+        <table class="table table-dark">
+            <thead>
+                <tr>
+                    <th scope="col">ISBN</th>
+                    <th scope="col">Titulo</th>
+                    <th scope="col">Autor</th>
+                    <th scope="col">Año</th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for book in books %}
+                <tr>
+                    <span class="align-middle">
+                        <td><a href="/book/{{book['isbn']}}">{{book.isbn}}</a></td>
+                    <td>{{book.title}}</td>
+                    <td>{{book.author}}</td>
+                    <td>{{book.year}}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-</form>
+</section>
 
-<div class="table-responsive">
-    <table class="table table-dark">
-        <thead>
-            <tr>
-                <th scope="col">ISBN</th>
-                <th scope="col">Title</th>
-                <th scope="col">Author</th>
-                <th scope="col">Year</th>
-                <th scope="col"></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for book in books %}
-            <tr>
-                <span class="align-middle">
-                    <td><a>{{book.isbn}}</a></td>
-                </span>
-                <td><a>{{book.title}}</a></td>
-                <td><a>{{book.author}}</a></td>
-                <td><a>{{book.year}}</a></td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-
-<!-- <p>{{message}}</p> -->
 {% endblock %}
