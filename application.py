@@ -207,11 +207,16 @@ def api(isbn):
     if not lookForBook:
         return jsonify({"error": "Invalid ISBN"}), 422
     # query api
-    res = requests.get(
-        "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn).json()
 
-    # ratingsCount = res["books"][0]["ratingsCount"]
-    # ratings = res["books"][0]["averageRating"]
+    res = requests.get(
+        "https://www.googleapis.com/books/v1/volumes/?q=isbn:"+isbn)
+    if res.status_code != 200:
+        raise Exception("ERROR: API request unsuccessful.")
+    data = res.json()
+
+    xd = data["items"][0]
+    averageRating = xd["volumeInfo"]["averageRating"]
+    count = xd["volumeInfo"]["ratingsCount"]
 
     # Return results in JSON format
     return jsonify({
@@ -219,8 +224,8 @@ def api(isbn):
         "author": lookForBook.author,
         "year": lookForBook.year,
         "isbn": lookForBook.isbn,
-        # "review_count": ratingsCount,
-        # "average_score": ratings
+        "review_count": count,
+        "average_score": averageRating
     })
     # ya no pude extraer la info del api
 
