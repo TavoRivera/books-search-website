@@ -1,10 +1,10 @@
 # Project 1
 
-Web Programming with Python and JavaScript
+Web Programming with Python and 
+
+
 styles in static with SASS
 
 helpers for login_required
 
-xddd
-
-hice lo que pude
+this is my first web project with python flask

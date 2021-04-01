@@ -101,7 +101,7 @@ def logout():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
-
+    # ingreso user y pass y compruebo
     if request.method == "POST":
 
         user = request.form.get("username")
@@ -116,10 +116,10 @@ def register():
             return render_template("register.html", alert="ingrese una contraseña")
         elif pass1 != pass2:
             return render_template("register.html", alert="contraseñas no coinciden")
-
+        # busco en mi base de datos si ese usuario ya existe
         new = db.execute(
             "SELECT * FROM users WHERE username = :username;", {"username": user}).fetchone()
-
+        # si no hay usuarios con ese nombre, inserto este nombre de usuario a la tabla users
         if new is None:
             db.execute("INSERT INTO users (username, hash) VALUES (:user ,:pass1);", {
                        "user": user, "pass1": generate_password_hash(pass1)})
@@ -137,19 +137,16 @@ def search():
 
     # Get form information
     if request.method == "POST":
-
+        # capwords para que cada inicio de una palabra inicie con mayúscula para mejorar la búsqueda
         search = str(request.form.get("search"))
         search = string.capwords(search, sep=None)
-
-        print(search)
-
+        # busca si ese libro existe o si hay algún parecido
         query = db.execute(
             "SELECT * FROM books WHERE title LIKE :search OR isbn LIKE :search OR author LIKE :search", {
                 "search": '%' + search + '%'},
         )
         books = query.fetchall()
-        print(books)
-
+        # si el tamaño de la búsqueda es 0, entonces no encontró resultados
         if len(books) == 0:
             return render_template("index.html", alert="libro no encotrado")
         return render_template("index.html", name=session["user_name"], books=books)
@@ -160,60 +157,72 @@ def search():
 def book(isbn):
 
     user = session["user_id"]
-
+    # seleccionar de la tabla books el isbn
     book = db.execute("SELECT * FROM books WHERE isbn = :isbn",
                       {"isbn": isbn})
     book_id = book.fetchone()
     book_id = book_id[0]
+    # seleccionar información de books correspondiente a su isbn
     row = db.execute("SELECT isbn, title, author, year FROM books WHERE isbn = :isbn",
                      {"isbn": isbn})
     book_info = row.fetchall()
-    reviews = db.execute("SELECT * FROM rate WHERE id_user = :id_user AND isbn = :id_book",
-                         {"id_user": user,
-                          "id_book": book_id})
-    rate = reviews.fetchall()
+    # toma el nombre de usuario, comentario, putuación y fecha de las tablas users y rate cuando está en un libro específico
+    rev = db.execute(
+        "SELECT username, comment, rating, time FROM users JOIN rate ON users.id_user = rate.id_user WHERE isbn = :isbn", {"isbn": isbn})
+    reviews = rev.fetchall()
+    # solicitud al api para tomar información
+    res = requests.get(
+        "https://www.googleapis.com/books/v1/volumes/?q=isbn:"+isbn)
+    data = res.json()
 
     if request.method == "POST":
 
         rating = int(request.form.get("rating"))
         comment = request.form.get("comment")
-
+        # comprueba si el usuario ya hizo un comentario
         comprobe = db.execute("SELECT * FROM rate WHERE id_user = :id_user AND isbn = :id_book",
                               {"id_user": user,
                                "id_book": book_id})
 
         if comprobe.rowcount == 1:
-            return render_template("book.html", book_info=book_info, rate=rate,  name=session["user_name"], alert="Ya subiste una opinión sobre este libro")
-
+            return render_template("book.html", book_info=book_info, rate=reviews, alert="Ya subiste una opinión sobre este libro")
+        # si no ha hecho un comentario, inserta el nuevo
         db.execute("INSERT INTO rate (isbn, id_user, rating, comment, time) VALUES (:isbn, :id_user, :rating, :comment, now())", {
                    "isbn": book_id, "id_user": user, "rating": rating, "comment": comment})
         db.commit()
-
-        return render_template("index.html", success="has añadido un comentario, busca el libro para verlo")
+        # extraemos la informacion de la api
+        xd = data["items"][0]
+        description = xd["volumeInfo"]["description"]
+        categories = xd["volumeInfo"]["categories"]
+        rated = xd["volumeInfo"]["averageRating"]
+        # el comentario no se coloca automáticamente, por lo que habrá que recargar luego del submit
+        return render_template("book.html", rate=reviews, book_info=book_info, description=description, categories=categories, rated=rated, success="has añadido un comentario, recarga la página para poder verlo")
 
     else:
+        # extraemos la información de la api otra vez
+        xd = data["items"][0]
+        description = xd["volumeInfo"]["description"]
+        categories = xd["volumeInfo"]["categories"]
+        rated = xd["volumeInfo"]["averageRating"]
 
-        response = requests.get(
-            "https://www.googleapis.com/books/v1/volumes?q=isbn:" + isbn).json()
-
-        return render_template("book.html", rate=rate, book_info=book_info, name=session["user_name"],)
+        return render_template("book.html", rate=reviews, book_info=book_info, description=description, categories=categories, rated=rated)
 
 
 @app.route("/api/<isbn>", methods=["GET"])
 def api(isbn):
-
+    # se selecciona la información del libro cuando se introduzca su isbn
     lookForBook = db.execute(
         "SELECT * FROM books WHERE isbn=:isbn", {"isbn": isbn}).fetchone()
     if not lookForBook:
         return jsonify({"error": "Invalid ISBN"}), 422
-    # query api
+    # aolicitud al api
 
     res = requests.get(
         "https://www.googleapis.com/books/v1/volumes/?q=isbn:"+isbn)
     if res.status_code != 200:
         raise Exception("ERROR: API request unsuccessful.")
     data = res.json()
-
+    # se toma información del api
     xd = data["items"][0]
     averageRating = xd["volumeInfo"]["averageRating"]
     count = xd["volumeInfo"]["ratingsCount"]
@@ -227,7 +236,6 @@ def api(isbn):
         "review_count": count,
         "average_score": averageRating
     })
-    # ya no pude extraer la info del api
 
 
 def errorhandler(e):
