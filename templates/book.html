@@ -5,16 +5,24 @@
 {% endblock %}
 
 {% block content %}
-<div class="row container text-center mt-4">
-    <div class="col-sm-4">
-        <img src="http://covers.openlibrary.org/b/isbn/{{book_info[0]['isbn']}}-M.jpg" width="130px">
+<div class="container text-center mt-4">
+    <div class="row container mt-3">
+        <div class="col-4">
+            <img src="http://covers.openlibrary.org/b/isbn/{{book_info[0]['isbn']}}-M.jpg" width="150px">
+        </div>
+        <div class="col-4">
+            <h1>{{book_info[0]['title']}}</h1>
+            <h5>Author: {{book_info[0]['author']}}</h5>
+            <h5>Published: {{book_info[0]['year']}}</h5>
+            <h5>ISBN: {{book_info[0]['isbn']}}</h5>
+        </div>
+        <div class="col-4">
+            <h5>Description:</h5>
+            <p class="text-center">{{description}}</p>
+            <h6>Categories: {{categories}}</h5>
+            <h6>Rating: {{rated}} points</h5>
+        </div>
     </div>
-    <div class="col-sm-4">
-        <h1>{{book_info[0]['title']}}</h1>
-        <h5>Author: {{book_info[0]['author']}}</h5>
-        <h5>Published: {{book_info[0]['year']}}</h5>
-        <h5>ISBN: {{book_info[0]['isbn']}}</h5>
-    </div>   
 </div>
 <div class="dropdown-divider mt-4"></div>
     <h4 class="alert alert-warning">Comentarios</h4>
@@ -49,7 +57,7 @@
     {% for r in rate %}
     <div class="list-group">
         <div class="d-flex w-100 justify-content-between row">
-            <h6 class="mb-1" style="color:#1777; font-size: 30px;">{{name}}</h6>
+            <h6 class="mb-1" style="color:#1777; font-size: 30px;">{{r.username}}</h6>
             <small>A las {{r.time}}</small>
         </div>
         <p class="mb-1"><b>Comentario:</b> {{r.comment}}</p>
