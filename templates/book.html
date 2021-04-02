@@ -19,17 +19,19 @@
         <div class="col-4">
             <h5>Description:</h5>
             <p class="text-center">{{description}}</p>
-            <h6>Categories: {{categories}}</h5>
-            <h6>Rating: {{rated}} points</h5>
+            <p><b>Categories:</b> {{categories}}</h6>
+            <h5>Average and number of people who rated this book on the Google Books API</h5>
+            <p><b>Rating:</b> {{rated}} points</p>
+            <p><b>Rating counts:</b> {{count}}</p>
         </div>
     </div>
 </div>
 <div class="dropdown-divider mt-4"></div>
-    <h4 class="alert alert-warning">Comentarios</h4>
+    <h4 class="table_xd text-white">Comentarios</h4>
 <div>
     <form method="POST" class="form-border">
         <div class="form-row">
-            <div class="form-group col-sm">
+            <div class="form-group col-5">
                 <label for="rating">Califica este libro</label>
                 <select id="rating" name="rating" class="form-control" required>
                     <option value="1">1</option>
@@ -39,14 +41,14 @@
                     <option value="5">5</option>
                 </select>
             </div>
-            <div class="form-group col-sm-6">
+            <div class="form-group col-7">
                 <div class="input-group">
-                    <div class="form-group">
+                    <div class="form-group col-5">
                         <p>Haga un comentario</p>
-                        <input autocomplete="off" autofocus class="form-control" name="comment" placeholder="I love this book!" type="text" />
+                        <input autocomplete="off" autofocus class="form-control" name="comment" placeholder="I love this book!" type="text">
                     </div>
-                    <div class="form-group col-sm">
-                        <button class="btn btn-success" type="submit">Submit</button>
+                    <div class="form-group col-2">
+                        <button class="btn btn_color" type="submit">Submit</button>
                     </div>
                 </div>
             </div>
