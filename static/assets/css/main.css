@@ -89,4 +89,12 @@ footer {
   /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
 }
 
+.form {
+	width: 100%;
+	max-width: 330px;
+	padding: 15px;
+	margin: auto;
+	text-align: center;
+}
+
 /*# sourceMappingURL=main.css.map */

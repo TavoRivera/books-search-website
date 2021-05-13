@@ -1,7 +1,4 @@
-import os
-import string
-import requests
-import json
+import os, string, requests, json
 
 from flask import Flask, flash, session, render_template, redirect, request, url_for, jsonify
 from flask_session import Session
@@ -25,7 +22,7 @@ def after_request(response):
 
 
 # Check for environment variable
-if not "postgres://quextkykixqbuo: 5eae6fe7806d24b11d794730f2bfd0650e0a8b93e9f990b5b0126fe10fa8c170@ec2-54-145-102-149.compute-1.amazonaws.com: 5432/d1mic7vjgdmk59":
+if not "postgresql://quextkykixqbuo: 5eae6fe7806d24b11d794730f2bfd0650e0a8b93e9f990b5b0126fe10fa8c170@ec2-54-145-102-149.compute-1.amazonaws.com: 5432/d1mic7vjgdmk59":
     raise RuntimeError("DATABASE_URL is not set")
 
 # Configure session to use filesystem (instead of signed cookies)
@@ -35,8 +32,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 # Set up database
-engine = create_engine(
-    "postgres://quextkykixqbuo:5eae6fe7806d24b11d794730f2bfd0650e0a8b93e9f990b5b0126fe10fa8c170@ec2-54-145-102-149.compute-1.amazonaws.com:5432/d1mic7vjgdmk59")
+engine = create_engine("postgresql://quextkykixqbuo:5eae6fe7806d24b11d794730f2bfd0650e0a8b93e9f990b5b0126fe10fa8c170@ec2-54-145-102-149.compute-1.amazonaws.com:5432/d1mic7vjgdmk59")
 db = scoped_session(sessionmaker(bind=engine))
 
 
@@ -158,15 +154,11 @@ def search():
 def book(isbn):
 
     user = session["user_id"]
-    # select in table books the isbn
-    book = db.execute("SELECT * FROM books WHERE isbn = :isbn",
-                      {"isbn": isbn})
-    book_id = book.fetchone()
-    book_id = book_id[0]
+
     # select information in the table books corresponding to your isbn
-    row = db.execute("SELECT isbn, title, author, year FROM books WHERE isbn = :isbn",
+    books = db.execute("SELECT isbn, title, author, year FROM books WHERE isbn = :isbn",
                      {"isbn": isbn})
-    book_info = row.fetchall()
+    book_info = books.fetchall()
     # take the username, comment, rating and time of the tables users n rate when be into a specific book
     rev = db.execute(
         "SELECT username, comment, rating, time FROM users JOIN rate ON users.id_user = rate.id_user WHERE isbn = :isbn", {"isbn": isbn})
@@ -176,11 +168,11 @@ def book(isbn):
         "https://www.googleapis.com/books/v1/volumes/?q=isbn:"+isbn)
     data = res.json()
     # exctract the information
-    xd = data["items"][0]
-    description = xd["volumeInfo"]["description"]
-    categories = xd["volumeInfo"]["categories"]
-    rated = xd["volumeInfo"]["averageRating"]
-    count = xd["volumeInfo"]["ratingsCount"]
+    api = data["items"][0]
+    description = api["volumeInfo"]["description"]
+    categories = api["volumeInfo"]["categories"]
+    rated = api["volumeInfo"]["averageRating"]
+    count = api["volumeInfo"]["ratingsCount"]
 
     if request.method == "POST":
 
@@ -189,18 +181,17 @@ def book(isbn):
         # check if the user already made a comment
         comprobe = db.execute("SELECT * FROM rate WHERE id_user = :id_user AND isbn = :id_book",
                               {"id_user": user,
-                               "id_book": book_id})
+                               "id_book": isbn})
 
         if comprobe.rowcount == 1:
             return render_template("book.html", book_info=book_info, rate=reviews, alert="Ya subiste una opinión sobre este libro")
         # if you have not made a comment, insert the new one
         db.execute("INSERT INTO rate (isbn, id_user, rating, comment, time) VALUES (:isbn, :id_user, :rating, :comment, now())", {
-                   "isbn": book_id, "id_user": user, "rating": rating, "comment": comment})
+                   "isbn": isbn, "id_user": user, "rating": rating, "comment": comment})
         db.commit()
 
         """ el comentario no se coloca automáticamente, por lo que habrá que recargar luego del submit"""
-        return render_template("book.html", rate=reviews, book_info=book_info, description=description, categories=categories, rated=rated, count=count, success="has añadido un comentario, recarga la página para poder verlo")
-
+        return redirect(url_for('book',rate=reviews, book_info=book_info, description=description, categories=categories, rated=rated, count=count, isbn=isbn))
     else:
         return render_template("book.html", rate=reviews, book_info=book_info, description=description, categories=categories, rated=rated, count=count)
 
@@ -212,9 +203,9 @@ def book(isbn):
 @app.route("/api/<isbn>", methods=["GET"])
 def api(isbn):
     # book information is selected when you enter your isbn
-    lookForBook = db.execute(
-        "SELECT * FROM books WHERE isbn=:isbn", {"isbn": isbn}).fetchone()
-    if not lookForBook:
+    books = db.execute("SELECT * FROM books WHERE isbn=:isbn", {"isbn": isbn})
+    book_info = books.fetchone()
+    if not book_info:
         return jsonify({"error": "Invalid ISBN"}), 400
     # query api
     res = requests.get(
@@ -223,16 +214,16 @@ def api(isbn):
         raise Exception("ERROR: API request unsuccessful.")
     data = res.json()
     # se toma información del api
-    xd = data["items"][0]
-    averageRating = xd["volumeInfo"]["averageRating"]
-    count = xd["volumeInfo"]["ratingsCount"]
+    api = data["items"][0]
+    averageRating = api["volumeInfo"]["averageRating"]
+    count = api["volumeInfo"]["ratingsCount"]
 
     # Return results in JSON format
     return jsonify({
-        "title": lookForBook.title,
-        "author": lookForBook.author,
-        "year": lookForBook.year,
-        "isbn": lookForBook.isbn,
+        "title": book_info.title,
+        "author": book_info.author,
+        "year": book_info.year,
+        "isbn": book_info.isbn,
         "review_count": count,
         "average_score": averageRating
     })
