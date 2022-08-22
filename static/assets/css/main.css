@@ -96,5 +96,10 @@ footer {
 	margin: auto;
 	text-align: center;
 }
+.fondo{
+display: block;
+height: max-content;
+}
+
 
 /*# sourceMappingURL=main.css.map */

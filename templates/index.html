@@ -6,24 +6,25 @@
 {% endblock %}
 
 {% block content %}
-<section class="container text-center">
-    <h1>Hola {{name}} ¿qué libro estás buscando?</h1>
-    <form action="{{url_for('search')}}" method="post">
-        <div class="">
-            <input class="form-control" name="search" placeholder="ISBN, Titulo o Autor">
-            <div class="">
-                <button class="btn btn_color mt-5" id="search-btn">SEARCH</button>
-            </div>
-        </div>
-    </form>
+<section class="container text-center fondo">
+    <div class="xd">
+        <h1>Hi {{name}}, what book are you looking for?</h1>
+        <form action="{{url_for('search')}}" method="post">     
+                <input class="form-control" name="search" placeholder="ISBN, Title or Author">
+                <div class="">
+                    <button class="btn btn_color mt-5" id="search-btn">SEARCH</button>
+                </div>
+        </form>
+    </div>
     <div class="table-responsive mt-5">
+        {% if books %}
         <table class="table table_xd">
             <thead>
                 <tr>
                     <th scope="col">ISBN</th>
-                    <th scope="col">Titulo</th>
-                    <th scope="col">Autor</th>
-                    <th scope="col">Año</th>
+                    <th scope="col">Title</th>
+                    <th scope="col">Author</th>
+                    <th scope="col">Year</th>
                     <th scope="col"></th>
                 </tr>
             </thead>
@@ -39,6 +40,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% endif %}
     </div>
 </section>
 

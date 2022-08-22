@@ -55,11 +55,11 @@ def login():
         print(request.form.get("password"))
         # Ensure username was submitted
         if not request.form.get("username"):
-            return render_template("login.html", alert="proporcione un nombre de usuario")
+            return render_template("login.html", alert="Provide an user")
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return render_template("login.html", alert="proporcione una contraseña")
+            return render_template("login.html", alert="Provide a password")
 
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = :username;",
@@ -68,7 +68,7 @@ def login():
 
         # Ensure username exists and password is correct
         if result == None or not check_password_hash(result[2], request.form.get("password")):
-            return render_template("login.html", alert="usuario o contraseña inválidos")
+            return render_template("login.html", alert="password not match")
 
         # Remember which user has logged in
         session["user_id"] = result[0]
@@ -105,13 +105,13 @@ def register():
         pass2 = request.form.get("confirmation")
 
         if len(pass1) < 4:
-            return render_template("register.html", alert="ingrese contraseña de al menos cuatro caracteres")
+            return render_template("register.html", alert="Enter a password with 4 or more characters")
         if not user:
-            return render_template("register.html", alert="ingrese un nombre de usuario")
+            return render_template("register.html", alert="Enter an username")
         elif not pass1:
-            return render_template("register.html", alert="ingrese una contraseña")
+            return render_template("register.html", alert="Enter a password")
         elif pass1 != pass2:
-            return render_template("register.html", alert="contraseñas no coinciden")
+            return render_template("register.html", alert="Passwords not match")
         # search in my db if the user exist
         new = db.execute(
             "SELECT * FROM users WHERE username = :username;", {"username": user}).fetchone()
@@ -120,9 +120,9 @@ def register():
             db.execute("INSERT INTO users (username, hash) VALUES (:user ,:pass1);", {
                        "user": user, "pass1": generate_password_hash(pass1)})
             db.commit()
-            return render_template("login.html", success="Registrado")
+            return render_template("login.html", success="Register Success")
         else:
-            return render_template("register.html", alert="Usuario ya existe")
+            return render_template("register.html", alert="Username already exists")
     else:
         return render_template("register.html")
 
@@ -144,7 +144,7 @@ def search():
         books = query.fetchall()
         # if len of search is 0, then found no results
         if len(books) == 0:
-            return render_template("index.html", alert="libro no encotrado")
+            return render_template("index.html", alert="Book not found")
 
         return render_template("index.html", name=session["user_name"], books=books)
 
@@ -184,7 +184,7 @@ def book(isbn):
                                "id_book": isbn})
 
         if comprobe.rowcount == 1:
-            return render_template("book.html", book_info=book_info, rate=reviews, alert="Ya subiste una opinión sobre este libro")
+            return render_template("book.html", book_info=book_info, rate=reviews, alert="Already You submit a comment for this book")
         # if you have not made a comment, insert the new one
         db.execute("INSERT INTO rate (isbn, id_user, rating, comment, time) VALUES (:isbn, :id_user, :rating, :comment, now())", {
                    "isbn": isbn, "id_user": user, "rating": rating, "comment": comment})

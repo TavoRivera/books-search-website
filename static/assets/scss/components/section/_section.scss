@@ -46,3 +46,7 @@
 	margin: auto;
 	text-align: center;
 }
+.fondo{
+	background-color: adjust-color($color: #ff7e7e, $red: 1, $green: 2, $blue: 3, $hue: 0, $saturation: 0%, $lightness: 0%, $alpha: 1.0);
+
+}

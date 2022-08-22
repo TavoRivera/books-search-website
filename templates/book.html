@@ -27,12 +27,12 @@
     </div>
 </div>
 <div class="dropdown-divider mt-4"></div>
-    <h4 class="table_xd text-white">Comentarios</h4>
+    <h4 class="table_xd text-white">Comments</h4>
 <div>
     <form method="POST" class="form-border">
         <div class="form-row">
             <div class="form-group form col-5">
-                <label for="rating">Califica este libro</label>
+                <label for="rating">Rate this book</label>
                 <select id="rating" name="rating" class="form-control" required>
                     <option value="1">1</option>
                     <option value="2">2</option>
@@ -44,7 +44,7 @@
             <div class="form-group col-7">
                 <div class="input-group">
                     <div class="form-group col-5">
-                        <p>Haga un comentario</p>
+                        <p>Make a comment here</p>
                         <input autocomplete="off" autofocus class="form-control" name="comment" placeholder="I love this book!" type="text">
                     </div>
                     <div class="form-group col-2">
@@ -60,9 +60,9 @@
     <div class="list-group">
         <div class="d-flex w-100 justify-content-between row">
             <h6 class="mb-1" style="color:#1777; font-size: 30px;">{{r.username}}</h6>
-            <small>A las {{r.time}}</small>
+            <small>At {{r.time}}</small>
         </div>
-        <p class="mb-1"><b>Comentario:</b> {{r.comment}}</p>
+        <p class="mb-1"><b>Comment:</b> {{r.comment}}</p>
         <small><b>Rated:</b> {{r.rating}}</small>
     </div>
     {% endfor %}
